@@ -1,9 +1,7 @@
 # wsl-ssh-pageant
 
-[![Build Status](https://benpye.visualstudio.com/benpye/_apis/build/status/benpye.wsl-ssh-pageant?branchName=golang)](https://benpye.visualstudio.com/benpye/_build/latest?definitionId=1&branchName=golang)
-
 ## Why
-I use a Yubikey to store a GPG key pair and I like to use this key pair as my SSH key too. GPG on Windows exposes a Pageant style SSH agent and I wanted a way to use this key within WSL. I have rewritten this in Go as it means the release is a single simple binary, and I like Go.
+Because [benpye/wsl-ssh-pageant](https://github.com/benpye/wsl-ssh-pageant/) has not been maintained for a long time, so I forked it and maintaining this project.  
 
 ## How to use with WSL
 
@@ -43,7 +41,7 @@ You can use both `--winssh` and `--wsl` parameters at the same time with the sam
 # Frequently asked questions
 
 ## How do I download it?
-Grab the latest release on the [releases page](https://github.com/benpye/wsl-ssh-pageant/releases).
+Grab the latest release on the [releases page](https://github.com/AkinoKaede/wsl-ssh-pageant/releases).
 
 ## How do I build this?
 For WSL support you will need Go 1.12 or later,. Go 1.12 added support for `AF_UNIX` sockets on Windows.
@@ -69,5 +67,6 @@ Please open an issue, I do try and keep on top of them, promise.
 
 # Credit
 
+* Thanks to [Ben Pye](https://github.com/benpye/) for [benpye/wsl-ssh-pageant](https://github.com/benpye/wsl-ssh-pageant/)
 * Thanks to [John Starks](https://github.com/jstarks/) for [npiperelay](https://github.com/jstarks/npiperelay/) for an example of a more secure way to create a stream between WSL and Linux before `AF_UNIX` sockets were available.
 * Thanks for [Mark Dietzer](https://github.com/Doridian) for several contributions to the old .NET implementation.
