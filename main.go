@@ -12,6 +12,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"os/signal"
 	"os/user"
 	"reflect"
@@ -89,10 +90,14 @@ func queryPageant(buf []byte) (result []byte, err error) {
 	}
 
 	hwnd := win.FindWindow(syscall.StringToUTF16Ptr("Pageant"), syscall.StringToUTF16Ptr("Pageant"))
-
 	if hwnd == 0 {
-		err = errors.New("Could not find Pageant window")
-		return
+		log.Println("launching gpg-connect-agent")
+		exec.Command("gpg-connect-agent", "/bye").Run()
+
+		if hwnd = win.FindWindow(syscall.StringToUTF16Ptr("Pageant"), syscall.StringToUTF16Ptr("Pageant")); hwnd == 0 {
+			err = errors.New("Could not find Pageant window")
+			return
+		}
 	}
 
 	// Typically you'd add thread ID here but thread ID isn't useful in Go
