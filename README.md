@@ -46,6 +46,11 @@ Grab the latest release on the [releases page](https://github.com/AkinoKaede/wsl
 ## How do I build this?
 You need Go 1.16 or later.
 
+To create a build with a console window:
+```
+go build
+```
+
 To create a build without a console window:
 ```
 go build -ldflags -H=windowsgui
