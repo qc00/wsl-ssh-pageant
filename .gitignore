@@ -1,6 +1,3 @@
-# Visual Studio Code
-.vscode/*
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -14,9 +11,6 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Generated file
-assets.go
-
-# Build artifacts
-build/*
-release.zip
+*.DS_Store
+.idea
+.vscode
