@@ -44,12 +44,7 @@ You can use both `--winssh` and `--wsl` parameters at the same time with the sam
 Grab the latest release on the [releases page](https://github.com/AkinoKaede/wsl-ssh-pageant/releases).
 
 ## How do I build this?
-For WSL support you will need Go 1.12 or later,. Go 1.12 added support for `AF_UNIX` sockets on Windows.
-
-To create the assets.go run:
-```
-go generate
-```
+You need Go 1.16 or later.
 
 To create a build without a console window:
 ```

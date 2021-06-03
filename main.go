@@ -1,13 +1,11 @@
 package main
 
-//go:generate go run github.com/go-bindata/go-bindata/go-bindata -pkg $GOPACKAGE -o assets.go assets/
-
 import (
 	"bufio"
+	_ "embed"
 	"encoding/binary"
 	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -63,6 +61,9 @@ type SecurityAttributes struct {
 
 var queryPageantMutex sync.Mutex
 
+//go:embed assets/icon.ico
+var icon []byte
+
 func makeInheritSaWithSid() *windows.SecurityAttributes {
 	var sa windows.SecurityAttributes
 
@@ -85,17 +86,20 @@ func makeInheritSaWithSid() *windows.SecurityAttributes {
 
 func queryPageant(buf []byte) (result []byte, err error) {
 	if len(buf) > agentMaxMessageLength {
-		err = errors.New("Message too long")
+		err = errors.New("message too long")
 		return
 	}
 
-	hwnd := win.FindWindow(syscall.StringToUTF16Ptr("Pageant"), syscall.StringToUTF16Ptr("Pageant"))
+	name, _ := syscall.UTF16PtrFromString("Pageant")
+	hwnd := win.FindWindow(name, name)
 	if hwnd == 0 {
 		log.Println("launching gpg-connect-agent")
 		exec.Command("gpg-connect-agent", "/bye").Run()
 
-		if hwnd = win.FindWindow(syscall.StringToUTF16Ptr("Pageant"), syscall.StringToUTF16Ptr("Pageant")); hwnd == 0 {
-			err = errors.New("Could not find Pageant window")
+		name, _ = syscall.UTF16PtrFromString("Pageant")
+		hwnd = win.FindWindow(name, name)
+		if hwnd == 0 {
+			err = errors.New("could not find Pageant window")
 			return
 		}
 	}
@@ -104,12 +108,13 @@ func queryPageant(buf []byte) (result []byte, err error) {
 	// We would need goroutine ID but Go hides this and provides no good way of
 	// accessing it, instead we serialise calls to queryPageant and treat it
 	// as not being goroutine safe
-	mapName := fmt.Sprintf("WSLPageantRequest")
+	mapName := "WSLPageantRequest"
 	queryPageantMutex.Lock()
 
 	var sa = makeInheritSaWithSid()
 
-	fileMap, err := windows.CreateFileMapping(invalidHandleValue, sa, pageReadWrite, 0, agentMaxMessageLength, syscall.StringToUTF16Ptr(mapName))
+	mapNamePtr, _ := syscall.UTF16PtrFromString(mapName)
+	fileMap, err := windows.CreateFileMapping(invalidHandleValue, sa, pageReadWrite, 0, agentMaxMessageLength, mapNamePtr)
 	if err != nil {
 		queryPageantMutex.Unlock()
 		return
@@ -148,7 +153,7 @@ func queryPageant(buf []byte) (result []byte, err error) {
 	len += 4
 
 	if len > agentMaxMessageLength {
-		err = errors.New("Return message too long")
+		err = errors.New("return message too long")
 		return
 	}
 
@@ -318,21 +323,14 @@ func main() {
 func onSystrayReady() {
 	systray.SetTitle("WSL-SSH-Pageant")
 	systray.SetTooltip("WSL-SSH-Pageant")
-
-	data, err := Asset("assets/icon.ico")
-	if err == nil {
-		systray.SetIcon(data)
-	}
+	systray.SetIcon(icon)
 
 	quit := systray.AddMenuItem("Quit", "Quits this app")
 
 	go func() {
-		for {
-			select {
-			case <-quit.ClickedCh:
-				systray.Quit()
-				return
-			}
+		for range quit.ClickedCh {
+			systray.Quit()
+			return
 		}
 	}()
 }
