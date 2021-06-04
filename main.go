@@ -94,7 +94,9 @@ func queryPageant(buf []byte) (result []byte, err error) {
 	hwnd := win.FindWindow(name, name)
 	if hwnd == 0 {
 		log.Println("launching gpg-connect-agent")
-		exec.Command("gpg-connect-agent", "/bye").Run()
+		cmd := exec.Command("gpg-connect-agent", "/bye")
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		cmd.Run()
 
 		name, _ = syscall.UTF16PtrFromString("Pageant")
 		hwnd = win.FindWindow(name, name)
