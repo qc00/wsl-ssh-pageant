@@ -28,6 +28,8 @@ jobs:
         goarch: [amd64, 386]
         include:
           - goos: windows
+            goarch: arm64
+          - goos: windows
             goarch: arm
             goarm: 7
       fail-fast: false
@@ -46,7 +48,7 @@ jobs:
       - name: Show workflow information
         id: get_filename
         run: |
-          export _NAME=${GOARCH}${GOARM}
+          export _NAME=${GOARCH}
           if [ ${GOARCH} = "arm" ]; then
               export _NAME=${GOARCH}32-v${GOARM}a
           fi
