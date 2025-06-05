@@ -30,6 +30,7 @@ import (
 
 var (
 	unixSocket  = flag.String("wsl", "", "Path to Unix socket for passthrough to WSL")
+	tcpSocket   = flag.String("tcp", "", "Host/Port to listen for TCP")
 	namedPipe   = flag.String("winssh", "", "Named pipe for use with Win32 OpenSSH")
 	verbose     = flag.Bool("verbose", false, "Enable verbose logging")
 	systrayFlag = flag.Bool("systray", false, "Enable systray integration")
@@ -180,7 +181,7 @@ func handleConnection(conn net.Conn) {
 		_, err := io.ReadFull(reader, lenBuf)
 		if err != nil {
 			if *verbose {
-				log.Printf("io.ReadFull error '%s'", err)
+				log.Printf("header io.ReadFull error '%s'", err)
 			}
 			return
 		}
@@ -190,7 +191,7 @@ func handleConnection(conn net.Conn) {
 		_, err = io.ReadFull(reader, buf)
 		if err != nil {
 			if *verbose {
-				log.Printf("io.ReadFull error '%s'", err)
+				log.Printf("body io.ReadFull error '%s'", err)
 			}
 			return
 		}
@@ -282,6 +283,22 @@ func main() {
 		}()
 	}
 
+	if *tcpSocket != "" {
+		tcp, err := net.Listen("tcp", *tcpSocket)
+		if err != nil {
+			log.Fatalf("Could not open socket %s, error '%s'\n", *tcpSocket, err)
+		}
+
+		defer tcp.Close()
+		log.Printf("Listening on Tcp socket: %s\n", *tcpSocket)
+		go func() {
+			listenLoop(tcp)
+
+			// If for some reason our listener breaks, kill the program
+			done <- true
+		}()
+	}
+
 	if *namedPipe != "" {
 		namedPipeFullName := "\\\\.\\pipe\\" + *namedPipe
 		var cfg = &winio.PipeConfig{}
@@ -300,7 +317,7 @@ func main() {
 		}()
 	}
 
-	if *namedPipe == "" && *unixSocket == "" {
+	if *namedPipe == "" && *unixSocket == "" && *tcpSocket == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
